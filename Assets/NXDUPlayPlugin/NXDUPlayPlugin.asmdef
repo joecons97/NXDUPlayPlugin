@@ -1,0 +1,22 @@
+{
+    "name": "NXDUPlayPlugin",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:b3f49edfedc855a48aa1a9e5d3cba438"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "LibraryPlugin.dll",
+        "protobuf-net.dll",
+        "protobuf-net.Core.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
