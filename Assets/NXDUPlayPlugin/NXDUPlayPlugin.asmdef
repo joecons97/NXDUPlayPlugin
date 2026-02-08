@@ -13,7 +13,8 @@
         "LibraryPlugin.dll",
         "protobuf-net.dll",
         "protobuf-net.Core.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "craftersmine.SteamGridDB.Net.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

@@ -12,21 +12,24 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
 
     public override string Description => "A library plugin to integrate with your Ubisoft Connect game library.";
 
-    public override UniTask<ArtworkCollection> GetArtworkCollection(string entryId, CancellationToken cancellationToken)
+    private GameArtworkService gameArtworkService = new();
+
+    public override async UniTask<ArtworkCollection> GetArtworkCollection(string entryId, CancellationToken cancellationToken)
     {
         var localCache = Uplay.GetLocalProductCache();
         var game = localCache.FirstOrDefault(x => x.uplay_id.ToString() == entryId);
+        var cover = await gameArtworkService.GetCoverUrlAsync(game.root.name);
 
         var result = new ArtworkCollection();
 
         if (game != null)
         {
+            result.Cover = cover ?? game.root?.thumb_image;
             result.Banner = game.root?.logo_image;
-            result.Cover = game.root?.thumb_image;
             result.Icon = game.root?.icon_image;
         }
 
-        return UniTask.FromResult(result);
+        return result;
     }
 
     public override async UniTask<List<LibraryEntry>> GetEntriesAsync(CancellationToken cancellationToken)
