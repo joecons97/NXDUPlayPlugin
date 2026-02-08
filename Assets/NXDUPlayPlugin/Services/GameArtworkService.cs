@@ -5,11 +5,10 @@ using System.Linq;
 public class GameArtworkService
 {
     private const string KEY = "eac60eb72325b5e1fc6a16466f0a041c";
+    private readonly SteamGridDb client = new(KEY);
 
     public async UniTask<string> GetCoverUrlAsync(string name)
     {
-        using var client = new SteamGridDb(KEY);
-
         var games = await client.SearchForGamesAsync(name);
         if(games.Length == 0)
             return null;
