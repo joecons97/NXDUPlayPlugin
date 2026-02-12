@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using LibraryPlugin;
-using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,11 +11,16 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
 
     public override string Description => "A library plugin to integrate with your Ubisoft Connect game library.";
 
-    private GameArtworkService gameArtworkService = new();
+    private readonly GameArtworkService gameArtworkService = new();
+    private readonly GameDetectionService gameDetectionService = new();
+    private readonly StartEntryService gameLaunchService = new();
+    private readonly StartClientService startClientService = new();
+    private InstallEntryService installEntryService => new(gameDetectionService);
+    private UninstallEntryService uninstallEntryService => new(gameDetectionService);
 
     public override async UniTask<ArtworkCollection> GetArtworkCollection(string entryId, CancellationToken cancellationToken)
     {
-        var localCache = Uplay.GetLocalProductCache();
+        var localCache = gameDetectionService.GetLocalProductCache();
         var game = localCache.FirstOrDefault(x => x.uplay_id.ToString() == entryId);
         var cover = await gameArtworkService.GetCoverUrlAsync(game.root.name);
 
@@ -34,14 +38,14 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
 
     public override async UniTask<List<LibraryEntry>> GetEntriesAsync(CancellationToken cancellationToken)
     {
-        var localCache = Uplay.GetLocalProductCache();
+        var localCache = gameDetectionService.GetLocalProductCache();
 
         var entries = await localCache
             .Where(game => game?.root?.start_game?.offline?.executables != null)
             .Select(async game =>
         {
             var exe = game.root?.start_game?.offline?.executables?.FirstOrDefault();
-            string path = ResolveExecutable(exe);
+            var path = exe.ResolveExecutableLocation();
 
             return new LibraryEntry
             {
@@ -55,30 +59,27 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
         return entries.ToList();
     }
 
-    private string ResolveExecutable(ProductInformation.Executable exe)
+    public override UniTask<GameActionResult> TryStartEntryAsync(LibraryEntry entry, CancellationToken cancellationToken)
     {
-        if (exe == null)
-            return "";
+        return UniTask.FromResult(gameLaunchService.StartEntry(this, entry, cancellationToken));
+    }
 
-        var key = @"SOFTWARE\";
-        var root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        var installsKey = root.OpenSubKey(key);
-        if (installsKey == null)
-        {
-            root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            installsKey = root.OpenSubKey(key);
-        }
+    public override UniTask OpenLibraryApplication(LibraryLocation location)
+    {
+        startClientService.StartClient(location);
 
-        var localRegister = exe.working_directory?.register?.Replace("HKEY_LOCAL_MACHINE\\" + key, "") ?? "";
+        return UniTask.CompletedTask;
+    }
 
-        var split = localRegister?.Split("\\") ?? new string[0];
-        if (split.Length == 0)
-            return "";
+    public override UniTask<GameActionResult> TryInstallEntryAsync(LibraryEntry entry, CancellationToken cancellationToken)
+    {
+        var result = installEntryService.InstallEntry(this, entry, cancellationToken);
+        return UniTask.FromResult(result);
+    }
 
-        var registryPath = string.Join("\\", split.Take(split.Length - 1));
-        var valueName = split.Last();
-
-        var gameData = installsKey.OpenSubKey(registryPath);
-        return (gameData?.GetValue(valueName) as string)?.Replace('/', System.IO.Path.DirectorySeparatorChar);
+    public override UniTask<GameActionResult> TryUninstallEntryAsync(LibraryEntry entry, CancellationToken cancellationToken)
+    {
+        var result = uninstallEntryService.UninstallEntry(this, entry, cancellationToken);
+        return UniTask.FromResult(result);
     }
 }

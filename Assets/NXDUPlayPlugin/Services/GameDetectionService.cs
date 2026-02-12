@@ -1,85 +1,14 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using YamlDotNet.Serialization;
 
-public class Uplay
+public class GameDetectionService
 {
-    [Serializable]
-    public class UplaySettings
-    {
-        public MiscSettings misc { get; set; }
-    }
-
-    [Serializable]
-    public class MiscSettings
-    {
-        public string game_installation_path { get; set; }
-    }
-
-    public const string AssertUrlBase = @"https://ubistatic3-a.akamaihd.net/orbit/uplay_launcher_3_0/assets/";
-
-    public static string ClientExecPath
-    {
-        get
-        {
-            var path = InstallationPath;
-            return string.IsNullOrEmpty(path) ? string.Empty : Path.Combine(path, "UbisoftConnect.exe");
-        }
-    }
-
-    public static string InstallationPath
-    {
-        get
-        {
-            var gamesLocation = SettingsFile?.misc?.game_installation_path;
-            if (gamesLocation == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                var rootDir = Path.GetDirectoryName(gamesLocation);
-                return rootDir;
-            }
-        }
-    }
-
-    public static string ConfigurationsCachePath
-    {
-        get
-        {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Ubisoft Game Launcher",
-                "cache",
-                "configuration",
-                "configurations");
-        }
-    }
-
-    public static string SettingsPath
-    {
-        get
-        {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Ubisoft Game Launcher",
-                "settings.yaml");
-        }
-    }
-
-    public static UplaySettings SettingsFile { get; } =
-        new DeserializerBuilder()
-            .IgnoreUnmatchedProperties()
-            .Build()
-            .Deserialize<UplaySettings>(File.ReadAllText(SettingsPath));
-
-    public static List<ProductInformation> GetLocalProductCache()
+    public List<ProductInformation> GetLocalProductCache()
     {
         var initErrorMessage = "Ubisoft Connect client was not initialized, please start the client at least once to generate user library data.";
         var products = new List<ProductInformation>();
-        var cachePath = ConfigurationsCachePath;
+        var cachePath = Uplay.ConfigurationsCachePath;
         if (!File.Exists(cachePath))
         {
             throw new FileNotFoundException(initErrorMessage);
@@ -121,7 +50,7 @@ public class Uplay
                             root.background_image = locValue;
                         }
 
-                        root.background_image = AssertUrlBase + root.background_image;
+                        root.background_image = Uplay.AssertUrlBase + root.background_image;
                     }
 
                     if (!string.IsNullOrEmpty(root.thumb_image))
@@ -131,7 +60,7 @@ public class Uplay
                             root.thumb_image = locValue;
                         }
 
-                        root.thumb_image = AssertUrlBase + root.thumb_image;
+                        root.thumb_image = Uplay.AssertUrlBase + root.thumb_image;
                     }
 
                     if (!string.IsNullOrEmpty(root.logo_image))
@@ -141,7 +70,7 @@ public class Uplay
                             root.logo_image = locValue;
                         }
 
-                        root.logo_image = AssertUrlBase + root.logo_image;
+                        root.logo_image = Uplay.AssertUrlBase + root.logo_image;
                     }
 
                     if (!string.IsNullOrEmpty(root.dialog_image))
@@ -151,7 +80,7 @@ public class Uplay
                             root.dialog_image = locValue;
                         }
 
-                        root.dialog_image = AssertUrlBase + root.dialog_image;
+                        root.dialog_image = Uplay.AssertUrlBase + root.dialog_image;
                     }
 
                     if (!string.IsNullOrEmpty(root.icon_image))
@@ -161,7 +90,7 @@ public class Uplay
                             root.icon_image = locValue;
                         }
 
-                        root.icon_image = AssertUrlBase + root.icon_image;
+                        root.icon_image = Uplay.AssertUrlBase + root.icon_image;
                     }
 
                     productInfo.uplay_id = item.UplayId;
