@@ -121,7 +121,10 @@ public class GameDetectionService
         {
             foreach (var install in installsKey.GetSubKeyNames())
             {
-                var gameData = installsKey.OpenSubKey(install);
+                using var gameData = installsKey.OpenSubKey(install);
+                if (gameData == null)
+                    continue;
+
                 var installDir = (gameData.GetValue("InstallDir") as string)?.Replace('/', Path.DirectorySeparatorChar);
                 if (string.IsNullOrEmpty(installDir) || !Directory.Exists(installDir))
                     continue;
@@ -141,6 +144,9 @@ public class GameDetectionService
                 }
             }
         }
+
+        installsKey.Dispose();
+        root.Dispose();
 
         return games;
     }
