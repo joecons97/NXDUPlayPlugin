@@ -17,8 +17,6 @@ public class StartEntryService
     {
         _cachedExecutables = null;
 
-        Debug.Log(Uplay.ClientExecPath);
-
         Process.Start(new ProcessStartInfo
         {
             FileName = Uplay.ClientExecPath,

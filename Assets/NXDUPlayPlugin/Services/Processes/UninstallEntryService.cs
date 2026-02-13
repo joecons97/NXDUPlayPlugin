@@ -20,8 +20,6 @@ public class UninstallEntryService
     {
         try
         {
-            Debug.Log(Uplay.ClientExecPath);
-
             Process.Start(new ProcessStartInfo
             {
                 FileName = Uplay.ClientExecPath,
@@ -38,14 +36,14 @@ public class UninstallEntryService
         }
         catch (Exception ex)
         {
-            UnityEngine.Debug.LogException(ex);
+            Debug.LogException(ex);
             return GameActionResult.Fail;
         }
     }
 
     private async UniTask MonitorGameUninstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
-        while (TryGetGame(entry.EntryId, out LibraryEntry game))
+        while (gameDetectionService.TryGetGame(entry.EntryId, out LibraryEntry game))
         {
             await UniTask.Delay(1000);
 
@@ -60,16 +58,5 @@ public class UninstallEntryService
 
         if (plugin.OnEntryUninstallationComplete != null)
             await plugin.OnEntryUninstallationComplete(entry.EntryId, plugin);
-    }
-
-    private bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
-    {
-        game = gameDetectionService.GetInstalledGames()
-            .FirstOrDefault(x => x.EntryId == entryId);
-
-        if (game == null)
-            return false;
-
-        return true;
     }
 }

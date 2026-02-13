@@ -1,7 +1,9 @@
 ﻿using LibraryPlugin;
 using Microsoft.Win32;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using YamlDotNet.Serialization;
 
 public class GameDetectionService
@@ -103,6 +105,17 @@ public class GameDetectionService
         }
 
         return products;
+    }
+
+    public bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
+    {
+        game = GetInstalledGames()
+            .FirstOrDefault(x => x.EntryId == entryId);
+
+        if (game == null)
+            return false;
+
+        return true;
     }
 
     public List<LibraryEntry> GetInstalledGames()

@@ -22,8 +22,6 @@ public class InstallEntryService
     {
         try
         {
-            Debug.Log(Uplay.ClientExecPath);
-
             Process.Start(new ProcessStartInfo
             {
                 FileName = Uplay.ClientExecPath,
@@ -48,7 +46,7 @@ public class InstallEntryService
     private async UniTask MonitorGameInstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
         LibraryEntry? game;
-        while (TryGetGame(entry.EntryId, out game) == false)
+        while (gameDetectionService.TryGetGame(entry.EntryId, out game) == false)
         {
             await UniTask.Delay(1000);
 
@@ -66,16 +64,5 @@ public class InstallEntryService
             var path = game.Path;
             await plugin.OnEntryInstallationComplete(entry.EntryId, path, plugin);
         }
-    }
-
-    private bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
-    {
-        game = gameDetectionService.GetInstalledGames()
-            .FirstOrDefault(x => x.EntryId == entryId);
-
-        if (game == null)
-            return false;
-
-        return true;
     }
 }
