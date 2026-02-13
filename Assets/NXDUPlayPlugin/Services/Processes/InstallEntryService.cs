@@ -46,7 +46,7 @@ public class InstallEntryService
     private async UniTask MonitorGameInstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
         LibraryEntry? game;
-        while (gameDetectionService.TryGetGame(entry.EntryId, out game) == false)
+        while (gameDetectionService.TryGetInstalledGame (entry.EntryId, out game) == false)
         {
             if (cancellationToken.IsCancellationRequested)
             {

@@ -14,7 +14,8 @@
         "protobuf-net.dll",
         "protobuf-net.Core.dll",
         "Newtonsoft.Json.dll",
-        "craftersmine.SteamGridDB.Net.dll"
+        "craftersmine.SteamGridDB.Net.dll",
+        "IGDB.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
