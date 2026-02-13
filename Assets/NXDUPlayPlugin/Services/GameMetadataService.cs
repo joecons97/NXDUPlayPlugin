@@ -15,12 +15,12 @@ public class GameMetadataService
     {
         var igdb = new IGDBClient(CLIENT_ID, SECRET_KEY);
 
-        entry.Name = entry.Name
+        var name = entry.Name
             .Replace("®", "")
             .Replace("™", "");
 
-        var response = await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, $"search \"{entry.Name}\"; fields involved_companies.developer, involved_companies.publisher, involved_companies.company.name, screenshots.url, genres.name, release_dates.date, summary;");
-        Debug.Log($"Found {response.Length} games with name {entry.Name} in IGDB");
+        var response = await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, $"search \"{name}\"; fields involved_companies.developer, involved_companies.publisher, involved_companies.company.name, screenshots.url, genres.name, release_dates.date, summary;");
+        Debug.Log($"Found {response.Length} games with name {name} in IGDB");
 
         //Let's make a (bad) assumption that the oldest entry is a correct one
         var game = response
