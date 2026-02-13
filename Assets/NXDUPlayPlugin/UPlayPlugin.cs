@@ -21,7 +21,7 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
 
     public override async UniTask<AdditionalMetadata> GetAdditionalMetadata(string entryId, CancellationToken cancellationToken)
     {
-        if (gameDetectionService.TryGetGame(entryId, out var game) == false)
+        if (gameDetectionService.TryGetGame(entryId, out var game) == false || game.root == null)
             return null;
 
         return await gameMetadataService.GetGameMetadata(new LibraryEntry() { EntryId = entryId, Name = game.root.name });
