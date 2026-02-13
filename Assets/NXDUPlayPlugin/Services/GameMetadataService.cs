@@ -30,15 +30,25 @@ public class GameMetadataService
         if (game == null)
             return null;
 
-        var screenshots = game.Screenshots.Values.Select(x => x.Url.Replace("thumb", "720p")).ToArray();
-        var developers = game.InvolvedCompanies.Values.Where(x => x.Developer == true).Select(x => x.Company.Value.Name).ToArray();
-        var publishers = game.InvolvedCompanies.Values.Where(x => x.Publisher == true).Select(x => x.Company.Value.Name).ToArray();
-        var genres = game.Genres.Values.Select(x => x.Name).ToArray();
-        var releaseDateTimeOffset = game.ReleaseDates.Values.Last().Date;
+        var screenshots = game.Screenshots?.Values?
+            .Select(x => x.Url?.Replace("thumb", "720p"))
+            .Where(x => x != null)
+            .ToArray() ?? Array.Empty<string>();
+        var developers = game.InvolvedCompanies?.Values?
+            .Where(x => x.Developer == true && x.Company?.Value?.Name != null)
+            .Select(x => x.Company.Value.Name)
+            .ToArray() ?? Array.Empty<string>();
+        var publishers = game.InvolvedCompanies?.Values?
+            .Where(x => x.Publisher == true && x.Company?.Value?.Name != null)
+            .Select(x => x.Company.Value.Name)
+            .ToArray() ?? Array.Empty<string>();
+        var genres = game.Genres?.Values?
+            .Select(x => x.Name)
+            .Where(x => x != null)
+            .ToArray() ?? Array.Empty<string>();
+        var releaseDateTimeOffset = game.ReleaseDates?.Values?.LastOrDefault()?.Date;
 
-        DateTime? releaseDate = releaseDateTimeOffset.HasValue 
-            ? releaseDateTimeOffset.Value.DateTime
-            : null;
+        DateTime? releaseDate = releaseDateTimeOffset?.DateTime;
 
         var result = new AdditionalMetadata(game.Summary, screenshots, developers, publishers, genres, releaseDate);
 
