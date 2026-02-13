@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using Cysharp.Threading.Tasks;
 using LibraryPlugin;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -46,7 +47,7 @@ public class InstallEntryService
 
     private async UniTask MonitorGameInstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
-        ProductInformation? game;
+        LibraryEntry? game;
         while (TryGetGame(entry.EntryId, out game) == false)
         {
             await UniTask.Delay(1000);
@@ -62,17 +63,19 @@ public class InstallEntryService
 
         if (plugin.OnEntryInstallationComplete != null)
         {
-            var path = game.root.start_game.offline.executables.FirstOrDefault()?.ResolveExecutableLocation();
+            var path = game.Path;
             await plugin.OnEntryInstallationComplete(entry.EntryId, path, plugin);
         }
     }
 
-    private bool TryGetGame(string entryId, [NotNullWhen(true)] out ProductInformation? game)
+    private bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
     {
-        game = gameDetectionService.GetLocalProductCache()
-            .Where(x => string.IsNullOrEmpty(x?.root?.start_game?.offline?.executables.FirstOrDefault().ResolveExecutableLocation()))
-            .FirstOrDefault(x => x.uplay_id.ToString() == entryId);
+        game = gameDetectionService.GetInstalledGames()
+            .FirstOrDefault(x => x.EntryId == entryId);
 
-        return game != null;
+        if (game == null)
+            return false;
+
+        return true;
     }
 }

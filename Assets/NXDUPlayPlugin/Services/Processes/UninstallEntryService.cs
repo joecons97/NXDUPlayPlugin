@@ -45,7 +45,7 @@ public class UninstallEntryService
 
     private async UniTask MonitorGameUninstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
-        while (TryGetGame(entry.EntryId, out ProductInformation game))
+        while (TryGetGame(entry.EntryId, out LibraryEntry game))
         {
             await UniTask.Delay(1000);
 
@@ -62,12 +62,14 @@ public class UninstallEntryService
             await plugin.OnEntryUninstallationComplete(entry.EntryId, plugin);
     }
 
-    private bool TryGetGame(string entryId, [NotNullWhen(true)] out ProductInformation? game)
+    private bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
     {
-        game = gameDetectionService.GetLocalProductCache()
-            .Where(x => string.IsNullOrEmpty(x?.root?.start_game?.offline?.executables.FirstOrDefault().ResolveExecutableLocation()))
-            .FirstOrDefault(x => x.uplay_id.ToString() == entryId);
+        game = gameDetectionService.GetInstalledGames()
+            .FirstOrDefault(x => x.EntryId == entryId);
 
-        return game != null;
+        if (game == null)
+            return false;
+
+        return true;
     }
 }

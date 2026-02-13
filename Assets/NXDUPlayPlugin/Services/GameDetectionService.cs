@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using LibraryPlugin;
+using Microsoft.Win32;
+using System.Collections.Generic;
 using System.IO;
 using YamlDotNet.Serialization;
 
@@ -101,5 +103,45 @@ public class GameDetectionService
         }
 
         return products;
+    }
+
+    public List<LibraryEntry> GetInstalledGames()
+    {
+        var games = new List<LibraryEntry>();
+
+        var root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        var installsKey = root.OpenSubKey(@"SOFTWARE\ubisoft\Launcher\Installs\");
+        if (installsKey == null)
+        {
+            root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            installsKey = root.OpenSubKey(@"SOFTWARE\ubisoft\Launcher\Installs\");
+        }
+
+        if (installsKey != null)
+        {
+            foreach (var install in installsKey.GetSubKeyNames())
+            {
+                var gameData = installsKey.OpenSubKey(install);
+                var installDir = (gameData.GetValue("InstallDir") as string)?.Replace('/', Path.DirectorySeparatorChar);
+                if (string.IsNullOrEmpty(installDir) || !Directory.Exists(installDir))
+                    continue;
+
+                var downloadPath = Path.Combine(installDir, "uplay_download");
+                if (Directory.Exists(downloadPath) && Directory.GetFileSystemEntries(downloadPath).Length == 0)
+                {
+                    var newGame = new LibraryEntry()
+                    {
+                        EntryId = install,
+                        Path = installDir,
+                        Name = Path.GetFileName(installDir.TrimEnd(Path.DirectorySeparatorChar)),
+                        IsInstalled = true
+                    };
+
+                    games.Add(newGame);
+                }
+            }
+        }
+
+        return games;
     }
 }
