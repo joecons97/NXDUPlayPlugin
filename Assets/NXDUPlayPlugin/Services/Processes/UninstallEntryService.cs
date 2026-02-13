@@ -43,7 +43,7 @@ public class UninstallEntryService
 
     private async UniTask MonitorGameUninstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
-        while (gameDetectionService.TryInstalledGetGame(entry.EntryId, out LibraryEntry game))
+        while (gameDetectionService.TryGetInstalledGame (entry.EntryId, out LibraryEntry game))
         {
             if (cancellationToken.IsCancellationRequested)
             {

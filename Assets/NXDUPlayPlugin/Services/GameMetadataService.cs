@@ -19,8 +19,19 @@ public class GameMetadataService
             .Replace("®", "")
             .Replace("™", "");
 
-        var response = await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, $"search \"{name}\"; fields involved_companies.developer, involved_companies.publisher, involved_companies.company.name, screenshots.url, genres.name, release_dates.date, summary;");
-        Debug.Log($"Found {response.Length} games with name {name} in IGDB");
+        Game[] response;
+
+        try
+        {
+            response = await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, $"search \"{name}\"; fields involved_companies.developer, involved_companies.publisher, involved_companies.company.name, screenshots.url, genres.name, release_dates.date, summary;");
+            Debug.Log($"Found {response.Length} games with name {name} in IGDB");
+        }
+        catch(Exception ex)
+        {
+            Debug.LogWarning($"IGDB query failed for {entry.Name}");
+            Debug.LogException(ex);
+            return null;
+        }
 
         //Let's make a (bad) assumption that the oldest entry is a correct one
         var game = response

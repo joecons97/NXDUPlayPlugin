@@ -107,7 +107,7 @@ public class GameDetectionService
         return products;
     }
 
-    public bool TryInstalledGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
+    public bool TryGetInstalledGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
     {
         game = GetInstalledGames()
             .FirstOrDefault(x => x.EntryId == entryId);
