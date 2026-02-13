@@ -7,8 +7,6 @@ public class StartClientService
 {
     public void StartClient(LibraryLocation location)
     {
-        Debug.Log(Uplay.ClientExecPath);
-
         UniTask.Create(async () =>
         {
             Process.Start(new ProcessStartInfo

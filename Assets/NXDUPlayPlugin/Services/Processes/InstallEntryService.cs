@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using Cysharp.Threading.Tasks;
 using LibraryPlugin;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -21,8 +22,6 @@ public class InstallEntryService
     {
         try
         {
-            Debug.Log(Uplay.ClientExecPath);
-
             Process.Start(new ProcessStartInfo
             {
                 FileName = Uplay.ClientExecPath,
@@ -46,11 +45,9 @@ public class InstallEntryService
 
     private async UniTask MonitorGameInstallation(UPlayPlugin plugin, LibraryEntry entry, CancellationToken cancellationToken)
     {
-        ProductInformation? game;
-        while (TryGetGame(entry.EntryId, out game) == false)
+        LibraryEntry? game;
+        while (gameDetectionService.TryGetGame(entry.EntryId, out game) == false)
         {
-            await UniTask.Delay(1000);
-
             if (cancellationToken.IsCancellationRequested)
             {
                 if (plugin.OnEntryInstallationCancelled != null)
@@ -58,21 +55,14 @@ public class InstallEntryService
 
                 return;
             }
+
+            await UniTask.Delay(1000, cancellationToken: cancellationToken);
         }
 
         if (plugin.OnEntryInstallationComplete != null)
         {
-            var path = game.root.start_game.offline.executables.FirstOrDefault()?.ResolveExecutableLocation();
+            var path = game.Path;
             await plugin.OnEntryInstallationComplete(entry.EntryId, path, plugin);
         }
-    }
-
-    private bool TryGetGame(string entryId, [NotNullWhen(true)] out ProductInformation? game)
-    {
-        game = gameDetectionService.GetLocalProductCache()
-            .Where(x => string.IsNullOrEmpty(x?.root?.start_game?.offline?.executables.FirstOrDefault().ResolveExecutableLocation()))
-            .FirstOrDefault(x => x.uplay_id.ToString() == entryId);
-
-        return game != null;
     }
 }

@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using LibraryPlugin;
+using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using YamlDotNet.Serialization;
 
 public class GameDetectionService
@@ -101,5 +105,62 @@ public class GameDetectionService
         }
 
         return products;
+    }
+
+    public bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
+    {
+        game = GetInstalledGames()
+            .FirstOrDefault(x => x.EntryId == entryId);
+
+        if (game == null)
+            return false;
+
+        return true;
+    }
+
+    public List<LibraryEntry> GetInstalledGames()
+    {
+        var games = new List<LibraryEntry>();
+
+        var root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        var installsKey = root.OpenSubKey(@"SOFTWARE\ubisoft\Launcher\Installs\");
+        if (installsKey == null)
+        {
+            root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            installsKey = root.OpenSubKey(@"SOFTWARE\ubisoft\Launcher\Installs\");
+        }
+
+        if (installsKey != null)
+        {
+            foreach (var install in installsKey.GetSubKeyNames())
+            {
+                using var gameData = installsKey.OpenSubKey(install);
+                if (gameData == null)
+                    continue;
+
+                var installDir = (gameData.GetValue("InstallDir") as string)?.Replace('/', Path.DirectorySeparatorChar);
+                if (string.IsNullOrEmpty(installDir) || !Directory.Exists(installDir))
+                    continue;
+
+                var downloadPath = Path.Combine(installDir, "uplay_download");
+                if (!Directory.Exists(downloadPath) || Directory.GetFileSystemEntries(downloadPath).Length == 0)
+                {
+                    var newGame = new LibraryEntry()
+                    {
+                        EntryId = install,
+                        Path = installDir,
+                        Name = Path.GetFileName(installDir.TrimEnd(Path.DirectorySeparatorChar)),
+                        IsInstalled = true
+                    };
+
+                    games.Add(newGame);
+                }
+            }
+        }
+
+        installsKey.Dispose();
+        root.Dispose();
+
+        return games;
     }
 }
