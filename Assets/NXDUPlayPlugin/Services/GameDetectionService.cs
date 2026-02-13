@@ -107,10 +107,21 @@ public class GameDetectionService
         return products;
     }
 
-    public bool TryGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
+    public bool TryInstalledGetGame(string entryId, [NotNullWhen(true)] out LibraryEntry? game)
     {
         game = GetInstalledGames()
             .FirstOrDefault(x => x.EntryId == entryId);
+
+        if (game == null)
+            return false;
+
+        return true;
+    }
+
+    public bool TryGetGame(string entryId, [NotNullWhen(true)] out ProductInformation? game)
+    {
+        game = GetLocalProductCache()
+            .FirstOrDefault(x => x.uplay_id.ToString() == entryId);
 
         if (game == null)
             return false;

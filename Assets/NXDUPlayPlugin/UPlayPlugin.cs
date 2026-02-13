@@ -15,8 +15,17 @@ public class UPlayPlugin : LibraryPlugin.LibraryPlugin
     private readonly GameDetectionService gameDetectionService = new();
     private readonly StartEntryService gameLaunchService = new();
     private readonly StartClientService startClientService = new();
+    private readonly GameMetadataService gameMetadataService = new();
     private InstallEntryService installEntryService => new(gameDetectionService);
     private UninstallEntryService uninstallEntryService => new(gameDetectionService);
+
+    public override async UniTask<AdditionalMetadata> GetAdditionalMetadata(string entryId, CancellationToken cancellationToken)
+    {
+        if (gameDetectionService.TryGetGame(entryId, out var game) == false)
+            return null;
+
+        return await gameMetadataService.GetGameMetadata(new LibraryEntry() { EntryId = entryId, Name = game.root.name });
+    }
 
     public override async UniTask<ArtworkCollection> GetArtworkCollection(string entryId, CancellationToken cancellationToken)
     {
