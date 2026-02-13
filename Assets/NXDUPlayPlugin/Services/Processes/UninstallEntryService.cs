@@ -45,8 +45,6 @@ public class UninstallEntryService
     {
         while (gameDetectionService.TryGetGame(entry.EntryId, out LibraryEntry game))
         {
-            await UniTask.Delay(1000);
-
             if (cancellationToken.IsCancellationRequested)
             {
                 if (plugin.OnEntryUninstallationCancelled != null)
@@ -54,6 +52,8 @@ public class UninstallEntryService
 
                 return;
             }
+
+            await UniTask.Delay(1000);
         }
 
         if (plugin.OnEntryUninstallationComplete != null)

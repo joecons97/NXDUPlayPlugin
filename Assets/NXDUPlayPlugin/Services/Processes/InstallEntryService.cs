@@ -48,8 +48,6 @@ public class InstallEntryService
         LibraryEntry? game;
         while (gameDetectionService.TryGetGame(entry.EntryId, out game) == false)
         {
-            await UniTask.Delay(1000);
-
             if (cancellationToken.IsCancellationRequested)
             {
                 if (plugin.OnEntryInstallationCancelled != null)
@@ -57,6 +55,8 @@ public class InstallEntryService
 
                 return;
             }
+
+            await UniTask.Delay(1000);
         }
 
         if (plugin.OnEntryInstallationComplete != null)
