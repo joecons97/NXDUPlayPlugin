@@ -143,7 +143,7 @@ public class GameDetectionService
                     continue;
 
                 var downloadPath = Path.Combine(installDir, "uplay_download");
-                if (Directory.Exists(downloadPath) && Directory.GetFileSystemEntries(downloadPath).Length == 0)
+                if (!Directory.Exists(downloadPath) || Directory.GetFileSystemEntries(downloadPath).Length == 0)
                 {
                     var newGame = new LibraryEntry()
                     {
