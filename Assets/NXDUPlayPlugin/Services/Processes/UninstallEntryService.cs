@@ -53,7 +53,7 @@ public class UninstallEntryService
                 return;
             }
 
-            await UniTask.Delay(1000);
+            await UniTask.Delay(1000, cancellationToken: cancellationToken);
         }
 
         if (plugin.OnEntryUninstallationComplete != null)
